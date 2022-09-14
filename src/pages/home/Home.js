@@ -62,7 +62,7 @@ export default function Home() {
         }
       );
 
-    // cleanup function
+    // cleanup function. Fires when this component unmounts.
     return () => unsubscribe();
   }, []);
 

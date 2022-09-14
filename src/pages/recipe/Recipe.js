@@ -19,19 +19,37 @@ export default function Recipe() {
   useEffect(() => {
     setIsPending(true);
 
-    projectFirestore
+    const unsubscribe = projectFirestore
       .collection("recipes")
       .doc(id)
-      .get()
-      .then((doc) => {
-        if (doc.exists) {
+      // .get()
+      // .then((doc) => {
+      //   if (doc.exists) {
+      //     setIsPending(false);
+      //     setRecipe(doc.data());
+      //   } else {
+      //     setIsPending(false);
+      //     setError("Could not find that recipe!");
+      //   }
+      // });
+      .onSnapshot(
+        (doc) => {
+          if (doc.exists) {
+            setIsPending(false);
+            setRecipe(doc.data());
+          } else {
+            setIsPending(false);
+            setError("Could not find that recipe!");
+          }
+        },
+        // 2nd argument for when error is occurred
+        (err) => {
+          setError(err.message);
           setIsPending(false);
-          setRecipe(doc.data());
-        } else {
-          setIsPending(false);
-          setError("Could not find that recipe!");
         }
-      });
+      );
+
+    return () => unsubscribe();
   }, [id]);
 
   const handleClick = () => {
