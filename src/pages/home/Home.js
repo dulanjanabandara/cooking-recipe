@@ -16,29 +16,54 @@ export default function Home() {
   useEffect(() => {
     setIsPending(true);
 
-    projectFirestore
+    const unsubscribe = projectFirestore
       .collection("recipes") //collection(collectionName) connects to a collection in the database
-      .get() // get all the data from the above collection. This fetches a snapshot of the collection above. This is asyncronous
-      .then((snapshot) => {
-        if (snapshot.empty) {
-          setError("No recipes to load!");
-          setIsPending(false);
-        } else {
-          let results = [];
-          // docs contain all the documents inside the collection
-          snapshot.docs.forEach((doc) => {
-            results.push({ id: doc.id, ...doc.data() }); // data() contains title, time, ingredients and method
-            // console.log(doc);
-          });
-          setData(results);
+      // .get() // get all the data from the above collection. This fetches a snapshot of the collection above. This is asyncronous
+      // .then((snapshot) => {
+      //   if (snapshot.empty) {
+      //     setError("No recipes to load!");
+      //     setIsPending(false);
+      //   } else {
+      //     let results = [];
+      //     // docs contain all the documents inside the collection
+      //     snapshot.docs.forEach((doc) => {
+      //       results.push({ id: doc.id, ...doc.data() }); // data() contains title, time, ingredients and method
+      //       // console.log(doc);
+      //     });
+      //     setData(results);
+      //     setIsPending(false);
+      //   }
+      //   // console.log(snapshot);
+      // })
+      // .catch((err) => {
+      //   setError(err.message);
+      //   setIsPending(false);
+      // });
+
+      // when using real time collection data
+      .onSnapshot(
+        (snapshot) => {
+          if (snapshot.empty) {
+            setError("No recipes to load!");
+            setIsPending(false);
+          } else {
+            let results = [];
+            snapshot.docs.forEach((doc) => {
+              results.push({ id: doc.id, ...doc.data() });
+            });
+            setData(results);
+            setIsPending(false);
+          }
+        },
+        // 2nd argument for when error is occurred
+        (err) => {
+          setError(err.message);
           setIsPending(false);
         }
-        // console.log(snapshot);
-      })
-      .catch((err) => {
-        setError(err.message);
-        setIsPending(false);
-      });
+      );
+
+    // cleanup function
+    return () => unsubscribe();
   }, []);
 
   return (
